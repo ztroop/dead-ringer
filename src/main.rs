@@ -54,15 +54,6 @@ fn compare_files(file1: &[u8], file2: &[u8]) -> (String, String) {
         }
     }
 
-    if file1.len() != file2.len() {
-        hex_diff.push_str(&format!(
-            "Different lengths: {} vs {}",
-            file1.len(),
-            file2.len()
-        ));
-        ascii_diff.push_str(" ");
-    }
-
     (hex_diff, ascii_diff)
 }
 
