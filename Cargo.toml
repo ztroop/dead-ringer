@@ -2,6 +2,8 @@
 name = "dead-ringer"
 version = "0.1.0"
 edition = "2021"
+description = "Dring, A Binary Diff Utility"
+authors = ["Zackary Troop"]
 
 [[bin]]
 name = "dring"
