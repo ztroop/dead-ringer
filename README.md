@@ -2,6 +2,14 @@
 
 A command-line tool written in Rust that compares two binary files and displays the differences. It uses a terminal-based user interface to present a side-by-side comparison, showing both hexadecimal and ASCII representations of the differing bytes.
 
+### Features
+
+- [x] Viewer for Hex & ASCII
+- [ ] Add Command Palette
+- [ ] Go-to Byte Functionality
+- [ ] Highlighting & Filtering Functionality
+- [ ] Cursor Functionality
+
 ## Installation
 
 ```sh
