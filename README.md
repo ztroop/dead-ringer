@@ -2,13 +2,23 @@
 
 A command-line tool written in Rust that compares two binary files and displays the differences. It uses a terminal-based user interface to present a side-by-side comparison, showing both hexadecimal and ASCII representations of the differing bytes.
 
-### Features
+## Features
 
-- [x] Viewer for Hex & ASCII
-- [ ] Add Command Palette
-- [ ] Go-to Byte Functionality
-- [ ] Highlighting & Filtering Functionality
-- [ ] Cursor Functionality
+- CLI Diff Viewer for Hex and ASCII.
+- Color highlighting for different data types to enhance readability.
+- Keyboard navigation enables interactive exploration of differences.
+- Displays bit position for focused data, aiding in precise location identification.
+
+## Color Reference
+
+|Type of Byte|Color|
+|---|---|
+|NULL|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
+|OFFSET|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
+|ASCII Printable|![#06989a](https://placehold.co/10x10/06989a/06989a.png) Cyan|
+|ASCII Whitespace|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
+|ASCII Other|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
+|Non-ASCII|![#c4a000](https://placehold.co/10x10/c4a000/c4a000.png) Yellow|
 
 ## Installation
 
