@@ -1,3 +1,5 @@
+[![Build](https://github.com/ztroop/dead-ringer/actions/workflows/build.yml/badge.svg)](https://github.com/ztroop/dead-ringer/actions/workflows/build.yml)
+
 # dead-ringer
 
 A command-line tool written in Rust that compares two binary files and displays the differences. It uses a terminal-based user interface to present a side-by-side comparison, showing both hexadecimal and ASCII representations of the differing bytes.
@@ -18,7 +20,7 @@ cargo install --path .
 
 ## Usage
 
-```sh
+```
 Usage: dring <file1> <file2>
 
 Arguments:
