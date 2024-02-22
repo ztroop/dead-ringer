@@ -9,17 +9,6 @@ A command-line tool written in Rust that compares two binary files and displays 
 - Keyboard navigation enables interactive exploration of differences.
 - Displays bit position for focused data, aiding in precise location identification.
 
-## Color Reference
-
-|Type of Byte|Color|
-|---|---|
-|NULL|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
-|OFFSET|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
-|ASCII Printable|![#06989a](https://placehold.co/10x10/06989a/06989a.png) Cyan|
-|ASCII Whitespace|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
-|ASCII Other|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
-|Non-ASCII|![#c4a000](https://placehold.co/10x10/c4a000/c4a000.png) Yellow|
-
 ## Installation
 
 ```sh
@@ -40,6 +29,17 @@ Options:
   -h, --help     Print help
   -V, --version  Print version
 ```
+
+## Color Reference
+
+|Type of Byte|Color|
+|---|---|
+|NULL|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
+|OFFSET|![#555753](https://placehold.co/10x10/555753/555753.png) Gray|
+|ASCII Printable|![#06989a](https://placehold.co/10x10/06989a/06989a.png) Cyan|
+|ASCII Whitespace|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
+|ASCII Other|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
+|Non-ASCII|![#c4a000](https://placehold.co/10x10/c4a000/c4a000.png) Yellow|
 
 ## Demonstration
 
