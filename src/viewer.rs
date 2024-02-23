@@ -105,7 +105,7 @@ impl FileDiffViewer {
                                 .fg(Color::White)
                                 .add_modifier(Modifier::REVERSED)
                         } else {
-                            byte_style(byte) // Implement this function based on your byte styling logic
+                            byte_style(byte)
                         };
                         Span::styled(format!("{:02x} ", byte), style)
                     })
@@ -131,7 +131,7 @@ impl FileDiffViewer {
                                 .fg(Color::White)
                                 .add_modifier(Modifier::REVERSED)
                         } else {
-                            byte_style(byte) // Use the same byte styling logic here
+                            byte_style(byte)
                         };
                         let ascii_char = if byte.is_ascii_graphic() || byte.is_ascii_whitespace() {
                             byte as char
