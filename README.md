@@ -26,10 +26,6 @@ Usage: dring <file1> <file2>
 Arguments:
   <file1>  Path to the first binary file
   <file2>  Path to the second binary file
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
 ```
 
 ## Color Reference
