@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "dead-ringer"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "crossterm 0.27.0",
  "tui",
