@@ -42,3 +42,7 @@ Arguments:
 ## Demonstration
 
 ![demo](./assets/demo.png)
+
+## Alternatives
+
+If you're looking for a full-featured Hex/ASCII viewer, check out [Hexyl](https://github.com/sharkdp/hexyl)!
