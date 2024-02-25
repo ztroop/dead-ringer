@@ -3,15 +3,15 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
 };
-use std::io;
-use tui::{
+use ratatui::{
     backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
+    text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
-    Terminal,
+    Frame, Terminal,
 };
+use std::io;
 
 pub struct FileDiffViewer {
     diffs: Vec<(usize, u8)>,
@@ -66,7 +66,7 @@ impl FileDiffViewer {
         Ok(())
     }
 
-    fn draw<B: tui::backend::Backend>(&self, f: &mut tui::Frame<B>) {
+    fn draw(&self, f: &mut Frame) {
         let size = f.size();
         let bytes_per_line = (size.width / 6) as usize;
         let lines = (size.height - 3) as usize;
@@ -110,7 +110,7 @@ impl FileDiffViewer {
                         Span::styled(format!("{:02x} ", byte), style)
                     })
                     .collect();
-                Spans::from(spans)
+                Line::from(spans)
             })
             .collect::<Vec<_>>();
 
@@ -141,7 +141,7 @@ impl FileDiffViewer {
                         Span::styled(ascii_char.to_string(), style)
                     })
                     .collect();
-                Spans::from(spans)
+                Line::from(spans)
             })
             .collect::<Vec<_>>();
 
@@ -163,7 +163,7 @@ impl FileDiffViewer {
         }
     }
 
-    fn move_cursor_down(&mut self, terminal_size: &tui::layout::Rect) {
+    fn move_cursor_down(&mut self, terminal_size: &Rect) {
         let bytes_per_line = (terminal_size.width / 6) as usize;
         let lines = (terminal_size.height - 5) as usize;
         let max_cursor_pos = self.diffs.len().saturating_sub(1);
@@ -182,7 +182,7 @@ impl FileDiffViewer {
         }
     }
 
-    fn move_cursor_up(&mut self, _terminal_size: &tui::layout::Rect) {
+    fn move_cursor_up(&mut self, _terminal_size: &Rect) {
         let bytes_per_line = (_terminal_size.width / 6) as usize;
 
         if self.cursor_pos >= bytes_per_line {
@@ -195,7 +195,7 @@ impl FileDiffViewer {
         }
     }
 
-    fn move_cursor_right(&mut self, terminal_size: &tui::layout::Rect) {
+    fn move_cursor_right(&mut self, terminal_size: &Rect) {
         let bytes_per_line = (terminal_size.width / 6) as usize;
         let lines = (terminal_size.height - 5) as usize;
         let max_cursor_pos = self.diffs.len().saturating_sub(1);
@@ -212,7 +212,7 @@ impl FileDiffViewer {
         }
     }
 
-    fn move_cursor_left(&mut self, terminal_size: &tui::layout::Rect) {
+    fn move_cursor_left(&mut self, terminal_size: &Rect) {
         let bytes_per_line = (terminal_size.width / 6) as usize;
 
         // Move cursor left if not at the start

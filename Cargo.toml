@@ -1,6 +1,6 @@
 [package]
 name = "dead-ringer"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 description = "Dring, A Binary Diff Utility"
 authors = ["Zackary Troop"]
@@ -10,5 +10,5 @@ name = "dring"
 path = "src/main.rs"
 
 [dependencies]
-tui = { version = "0.19.0", features = ["crossterm"] }
+ratatui = { version = "0.25.0", features = ["crossterm"] }
 crossterm = "0.27"
