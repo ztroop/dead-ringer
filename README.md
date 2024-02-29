@@ -18,6 +18,12 @@ git clone git@github.com:ztroop/dead-ringer.git && cd ./dead-ringer
 cargo install --path .
 ```
 
+### From the AUR
+
+```sh
+paru -S dead-ringer
+```
+
 ## Usage
 
 ```
