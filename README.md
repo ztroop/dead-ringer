@@ -4,6 +4,8 @@
 
 A command-line tool written in Rust that compares two binary files and displays the differences. It uses a terminal-based user interface to present a side-by-side comparison, showing both hexadecimal and ASCII representations of the differing bytes.
 
+![demo](./assets/demo.png)
+
 ## Features
 
 - CLI Diff Viewer for Hex and ASCII.
@@ -44,10 +46,6 @@ Arguments:
 |ASCII Whitespace|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
 |ASCII Other|![#4e9a06](https://placehold.co/10x10/4e9a06/4e9a06.png) Green|
 |Non-ASCII|![#c4a000](https://placehold.co/10x10/c4a000/c4a000.png) Yellow|
-
-## Demonstration
-
-![demo](./assets/demo.png)
 
 ## Alternatives
 
