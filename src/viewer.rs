@@ -48,10 +48,10 @@ impl FileDiffViewer {
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Char('q') => break 'mainloop,
-                    KeyCode::Down => self.move_cursor_down(&terminal.size()?),
-                    KeyCode::Up => self.move_cursor_up(),
-                    KeyCode::Right => self.move_cursor_right(&terminal.size()?),
-                    KeyCode::Left => self.move_cursor_left(),
+                    KeyCode::Down | KeyCode::Char('j') => self.move_cursor_down(&terminal.size()?),
+                    KeyCode::Up | KeyCode::Char('k') => self.move_cursor_up(),
+                    KeyCode::Right | KeyCode::Char('l') => self.move_cursor_right(&terminal.size()?),
+                    KeyCode::Left | KeyCode::Char('h') => self.move_cursor_left(),
                     _ => {}
                 }
             }
