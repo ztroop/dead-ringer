@@ -1,7 +1,11 @@
 use crossterm::{
-    event::{self, Event, KeyCode},
+    cursor::MoveTo,
+    event::{self, DisableMouseCapture, Event as CEvent, KeyCode},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
+    terminal::{
+        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
+        LeaveAlternateScreen,
+    },
 };
 use ratatui::{
     backend::CrosstermBackend,
@@ -11,13 +15,23 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
     Frame, Terminal,
 };
-use std::io;
+use std::{
+    io,
+    sync::mpsc,
+    thread,
+    time::{Duration, Instant},
+};
 
 pub struct FileDiffViewer {
     diffs: Vec<(usize, u8)>,
     cursor_pos: usize,
     scroll: usize,
     bytes_per_line: usize,
+}
+
+enum Event<I> {
+    Input(I),
+    Tick,
 }
 
 impl FileDiffViewer {
@@ -33,38 +47,60 @@ impl FileDiffViewer {
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
-        execute!(
-            stdout,
-            Clear(ClearType::All),
-            crossterm::terminal::EnterAlternateScreen,
-            crossterm::event::EnableMouseCapture,
-        )?;
+        execute!(stdout, EnterAlternateScreen)?;
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
 
-        'mainloop: loop {
-            terminal.draw(|f| self.draw(f))?;
+        let (tx, rx) = mpsc::channel();
+        let tick_rate = Duration::from_millis(200);
 
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => break 'mainloop,
-                    KeyCode::Down | KeyCode::Char('j') => self.move_cursor_down(&terminal.size()?),
-                    KeyCode::Up | KeyCode::Char('k') => self.move_cursor_up(),
-                    KeyCode::Right | KeyCode::Char('l') => self.move_cursor_right(&terminal.size()?),
-                    KeyCode::Left | KeyCode::Char('h') => self.move_cursor_left(),
-                    _ => {}
+        thread::spawn(move || {
+            let mut last_tick = Instant::now();
+            loop {
+                let timeout = tick_rate
+                    .checked_sub(last_tick.elapsed())
+                    .unwrap_or_else(|| Duration::from_secs(0));
+                if event::poll(timeout).expect("Failed to poll for events") {
+                    if let CEvent::Key(key) = event::read().expect("Failed to read the event") {
+                        tx.send(Event::Input(key))
+                            .expect("Failed to send keyboard input event");
+                    }
+                }
+                if last_tick.elapsed() >= tick_rate {
+                    if tx.send(Event::Tick).is_ok() {
+                        last_tick = Instant::now();
+                    }
                 }
             }
-        }
+        });
 
-        // Cleanup
-        disable_raw_mode()?;
-        execute!(
-            terminal.backend_mut(),
-            crossterm::terminal::LeaveAlternateScreen,
-            crossterm::event::DisableMouseCapture,
-            Clear(ClearType::All)
-        )?;
+        loop {
+            terminal.draw(|f| self.draw(f))?;
+            match rx.recv()? {
+                Event::Input(event) => match event.code {
+                    KeyCode::Char('q') => {
+                        disable_raw_mode()?;
+                        execute!(
+                            terminal.backend_mut(),
+                            LeaveAlternateScreen,
+                            DisableMouseCapture,
+                            Clear(ClearType::All),
+                            MoveTo(0, 0)
+                        )?;
+                        terminal.show_cursor()?;
+                        break;
+                    }
+                    KeyCode::Down | KeyCode::Char('j') => self.move_cursor_down(&terminal.size()?),
+                    KeyCode::Up | KeyCode::Char('k') => self.move_cursor_up(),
+                    KeyCode::Right | KeyCode::Char('l') => {
+                        self.move_cursor_right(&terminal.size()?)
+                    }
+                    KeyCode::Left | KeyCode::Char('h') => self.move_cursor_left(),
+                    _ => {}
+                },
+                Event::Tick => {}
+            }
+        }
         Ok(())
     }
 
