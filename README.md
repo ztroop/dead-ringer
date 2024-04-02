@@ -2,7 +2,7 @@
 
 # dead-ringer
 
-A command-line tool written in Rust that compares two binary files and displays the differences. It uses a terminal-based user interface to present a side-by-side comparison, showing both hexadecimal and ASCII representations of the differing bytes.
+A Rust-based command-line utility designed to compare two binary files, displaying differences by showcasing both hexadecimal and ASCII representations of the differing bytes.
 
 ![demo](./assets/demo.png)
 
