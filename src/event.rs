@@ -20,6 +20,7 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
+    /// Create a new event handler with the specified tick rate.
     pub fn new(tick_rate: u64) -> Self {
         let tick_rate = Duration::from_millis(tick_rate);
         let (sender, receiver) = mpsc::channel();

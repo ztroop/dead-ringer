@@ -12,9 +12,7 @@ use std::panic;
 /// Representation of a terminal user interface.
 #[derive(Debug)]
 pub struct Tui<B: Backend> {
-    /// Interface to the Terminal.
     terminal: Terminal<B>,
-    /// Terminal event handler.
     pub events: EventHandler,
 }
 

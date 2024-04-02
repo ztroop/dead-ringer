@@ -8,6 +8,7 @@ use ratatui::{
 
 use crate::app::App;
 
+/// Render the user interface.
 pub fn render(app: &mut App, frame: &mut Frame) {
     let size = frame.size();
 

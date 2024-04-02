@@ -2,6 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{app::App, tui::TerminalSize};
 
+/// Handle key events and update the app state accordingly.
 pub fn handle_key_events(
     key_event: KeyEvent,
     app: &mut App,
