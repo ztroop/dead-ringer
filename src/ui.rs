@@ -9,6 +9,7 @@ use ratatui::{
 };
 
 use crate::app::App;
+use crate::clipboard::Selection;
 use crate::search::{SearchKind, SearchMode};
 
 /// Render the user interface.
@@ -40,8 +41,15 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let all_matches = app.search.all_match_positions();
     let current_match = app.search.current_match_set();
 
-    let hex_lines = build_hex_lines(app, lines, &all_matches, &current_match);
-    let ascii_lines = build_ascii_lines(app, lines, &all_matches, &current_match);
+    let ctx = StyleContext {
+        cursor_pos: app.cursor_pos,
+        all_matches: &all_matches,
+        current_match: &current_match,
+        selection: app.selection.as_ref(),
+    };
+
+    let hex_lines = build_hex_lines(app, lines, &ctx);
+    let ascii_lines = build_ascii_lines(app, lines, &ctx);
 
     let hex_paragraph =
         Paragraph::new(hex_lines).block(Block::default().borders(Borders::ALL).title("Hex"));
@@ -54,12 +62,15 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     render_info_bar(app, frame, hex_chunks[1]);
 }
 
-fn build_hex_lines<'a>(
-    app: &App,
-    visible_lines: usize,
-    all_matches: &HashSet<usize>,
-    current_match: &HashSet<usize>,
-) -> Vec<Line<'a>> {
+/// Aggregates all the state needed to pick a style for any byte position.
+struct StyleContext<'a> {
+    cursor_pos: usize,
+    all_matches: &'a HashSet<usize>,
+    current_match: &'a HashSet<usize>,
+    selection: Option<&'a Selection>,
+}
+
+fn build_hex_lines<'a>(app: &App, visible_lines: usize, ctx: &StyleContext) -> Vec<Line<'a>> {
     app.diffs
         .chunks(app.bytes_per_line)
         .skip(app.scroll)
@@ -71,7 +82,7 @@ fn build_hex_lines<'a>(
                 .enumerate()
                 .map(|(idx, &(_, byte))| {
                     let pos = (line_idx + app.scroll) * app.bytes_per_line + idx;
-                    let style = pos_style(pos, byte, app.cursor_pos, all_matches, current_match);
+                    let style = pos_style(pos, byte, ctx);
                     Span::styled(format!("{:02x} ", byte), style)
                 })
                 .collect();
@@ -80,12 +91,7 @@ fn build_hex_lines<'a>(
         .collect()
 }
 
-fn build_ascii_lines<'a>(
-    app: &App,
-    visible_lines: usize,
-    all_matches: &HashSet<usize>,
-    current_match: &HashSet<usize>,
-) -> Vec<Line<'a>> {
+fn build_ascii_lines<'a>(app: &App, visible_lines: usize, ctx: &StyleContext) -> Vec<Line<'a>> {
     app.diffs
         .chunks(app.bytes_per_line)
         .skip(app.scroll)
@@ -97,7 +103,7 @@ fn build_ascii_lines<'a>(
                 .enumerate()
                 .map(|(idx, &(_, byte))| {
                     let pos = (line_idx + app.scroll) * app.bytes_per_line + idx;
-                    let style = pos_style(pos, byte, app.cursor_pos, all_matches, current_match);
+                    let style = pos_style(pos, byte, ctx);
                     let ch = if byte.is_ascii_graphic() || byte.is_ascii_whitespace() {
                         byte as char
                     } else {
@@ -113,24 +119,21 @@ fn build_ascii_lines<'a>(
 
 /// Determine the display style for a byte at a given position.
 ///
-/// Priority (highest to lowest): cursor > current match > any match > default.
-fn pos_style(
-    pos: usize,
-    byte: u8,
-    cursor_pos: usize,
-    all_matches: &HashSet<usize>,
-    current_match: &HashSet<usize>,
-) -> Style {
-    if pos == cursor_pos {
+/// Priority (highest to lowest):
+/// cursor > selection > current match > any match > default.
+fn pos_style(pos: usize, byte: u8, ctx: &StyleContext) -> Style {
+    if pos == ctx.cursor_pos {
         Style::default()
             .fg(Color::White)
             .add_modifier(Modifier::REVERSED)
-    } else if current_match.contains(&pos) {
+    } else if ctx.selection.is_some_and(|sel| sel.contains(pos)) {
+        Style::default().fg(Color::Black).bg(Color::LightBlue)
+    } else if ctx.current_match.contains(&pos) {
         Style::default()
             .fg(Color::Black)
             .bg(Color::Yellow)
             .add_modifier(Modifier::BOLD)
-    } else if all_matches.contains(&pos) {
+    } else if ctx.all_matches.contains(&pos) {
         Style::default().fg(Color::Black).bg(Color::DarkGray)
     } else {
         byte_style(byte)
@@ -162,7 +165,29 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
                 parts.push(Span::from(format!("Position: {:08x}", offset)));
             }
 
-            if let Some(idx) = app.search.current_match {
+            if let Some(ref sel) = app.selection {
+                if !parts.is_empty() {
+                    parts.push(Span::from("  │  "));
+                }
+                parts.push(Span::styled(
+                    format!("VISUAL {} byte(s)", sel.len()),
+                    Style::default()
+                        .fg(Color::LightBlue)
+                        .add_modifier(Modifier::BOLD),
+                ));
+                parts.push(Span::styled(
+                    "  y hex  Y ascii  Esc cancel".to_string(),
+                    Style::default().fg(Color::DarkGray),
+                ));
+            } else if let Some(ref flash) = app.flash {
+                if !parts.is_empty() {
+                    parts.push(Span::from("  │  "));
+                }
+                parts.push(Span::styled(
+                    flash.message.clone(),
+                    Style::default().fg(Color::Green),
+                ));
+            } else if let Some(idx) = app.search.current_match {
                 if !parts.is_empty() {
                     parts.push(Span::from("  │  "));
                 }
@@ -197,7 +222,7 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
                     parts.push(Span::from("  │  "));
                 }
                 parts.push(Span::styled(
-                    "/ hex search  ? ascii search  q quit".to_string(),
+                    "/ hex search  ? ascii search  v select  q quit".to_string(),
                     Style::default().fg(Color::DarkGray),
                 ));
             }

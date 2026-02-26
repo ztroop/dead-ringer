@@ -8,6 +8,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 
 mod app;
+mod clipboard;
 mod event;
 mod file;
 mod handler;

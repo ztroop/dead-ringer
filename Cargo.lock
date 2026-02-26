@@ -230,6 +230,7 @@ dependencies = [
 name = "dead-ringer"
 version = "1.1.4"
 dependencies = [
+ "base64",
  "crossterm",
  "ratatui",
 ]

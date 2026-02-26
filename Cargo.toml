@@ -12,3 +12,4 @@ path = "src/main.rs"
 [dependencies]
 ratatui = { version = "0.30.0", features = ["crossterm"] }
 crossterm = "0.29"
+base64 = "0.22.1"

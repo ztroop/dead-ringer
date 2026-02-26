@@ -48,8 +48,21 @@ Arguments:
 | `Tab` | Toggle between hex/ASCII search |
 | `n` | Next match |
 | `N` | Previous match |
-| `Esc` | Cancel search / clear results |
+| `v` | Enter visual selection mode |
+| `y` | Copy selection as hex (OSC 52) |
+| `Y` | Copy selection as ASCII (OSC 52) |
+| `Esc` | Cancel search / selection |
 | `q` | Quit |
+
+### Clipboard (tmux)
+
+Copy to clipboard uses the [OSC 52](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands) escape sequence, which works natively in most modern terminals (iTerm2, kitty, foot, WezTerm, etc.). If you run inside **tmux 3.3+**, add the following to `~/.tmux.conf` so the sequence is forwarded to the outer terminal:
+
+```
+set -g allow-passthrough on
+```
+
+Then reload with `tmux source-file ~/.tmux.conf`.
 
 ## Examples
 

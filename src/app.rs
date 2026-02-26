@@ -1,6 +1,14 @@
 use std::error;
 
+use crate::clipboard::{format_ascii, format_hex, osc52_copy, Selection};
 use crate::search::{SearchKind, SearchState};
+
+/// Transient feedback message shown in the info bar after an action.
+#[derive(Debug, Clone)]
+pub struct Flash {
+    pub message: String,
+    pub ticks_remaining: u8,
+}
 
 pub struct App {
     pub running: bool,
@@ -9,6 +17,8 @@ pub struct App {
     pub scroll: usize,
     pub bytes_per_line: usize,
     pub search: SearchState,
+    pub selection: Option<Selection>,
+    pub flash: Option<Flash>,
 }
 
 impl App {
@@ -20,10 +30,18 @@ impl App {
             scroll: 0,
             bytes_per_line: 0,
             search: SearchState::default(),
+            selection: None,
+            flash: None,
         }
     }
 
     pub fn tick(&mut self) -> Result<(), Box<dyn error::Error>> {
+        if let Some(ref mut f) = self.flash {
+            f.ticks_remaining = f.ticks_remaining.saturating_sub(1);
+            if f.ticks_remaining == 0 {
+                self.flash = None;
+            }
+        }
         Ok(())
     }
 
@@ -41,6 +59,8 @@ impl App {
         {
             self.scroll += 1;
         }
+
+        self.update_selection_cursor();
     }
 
     pub fn move_cursor_up(&mut self) {
@@ -51,6 +71,8 @@ impl App {
         if self.cursor_pos / self.bytes_per_line < self.scroll {
             self.scroll = self.scroll.saturating_sub(1);
         }
+
+        self.update_selection_cursor();
     }
 
     pub fn move_cursor_right(&mut self, terminal_height: u16) {
@@ -65,6 +87,8 @@ impl App {
         if cursor_line >= self.scroll + lines {
             self.scroll = cursor_line + 1 - lines;
         }
+
+        self.update_selection_cursor();
     }
 
     pub fn move_cursor_left(&mut self) {
@@ -76,6 +100,8 @@ impl App {
         if cursor_line < self.scroll {
             self.scroll = cursor_line;
         }
+
+        self.update_selection_cursor();
     }
 
     /// Begin a new search in the given mode (hex or ASCII).
@@ -114,6 +140,69 @@ impl App {
                 self.scroll = cursor_line.saturating_sub(visible_lines / 2);
             }
         }
+    }
+
+    /// Enter visual selection mode, anchoring at the current cursor position.
+    pub fn start_selection(&mut self) {
+        self.selection = Some(Selection::new(self.cursor_pos));
+    }
+
+    /// Cancel visual selection mode.
+    pub fn cancel_selection(&mut self) {
+        self.selection = None;
+    }
+
+    /// Keep the selection's moving end in sync with the cursor.
+    fn update_selection_cursor(&mut self) {
+        if let Some(ref mut sel) = self.selection {
+            sel.cursor = self.cursor_pos;
+        }
+    }
+
+    /// Copy the selected bytes as hex to the clipboard via OSC 52, then exit visual mode.
+    pub fn yank_hex(&mut self) {
+        if let Some(text) = self.selected_as_hex() {
+            let count = self.selection.map_or(0, |s| s.len());
+            let _ = osc52_copy(&text);
+            self.selection = None;
+            self.flash = Some(Flash {
+                message: format!("Copied {} byte(s) as hex", count),
+                ticks_remaining: 3,
+            });
+        }
+    }
+
+    /// Copy the selected bytes as ASCII to the clipboard via OSC 52, then exit visual mode.
+    pub fn yank_ascii(&mut self) {
+        if let Some(text) = self.selected_as_ascii() {
+            let count = self.selection.map_or(0, |s| s.len());
+            let _ = osc52_copy(&text);
+            self.selection = None;
+            self.flash = Some(Flash {
+                message: format!("Copied {} byte(s) as ASCII", count),
+                ticks_remaining: 3,
+            });
+        }
+    }
+
+    /// Return the selected diff bytes as a hex string.
+    fn selected_as_hex(&self) -> Option<String> {
+        self.selected_bytes().map(|b| format_hex(&b))
+    }
+
+    /// Return the selected diff bytes as an ASCII string.
+    fn selected_as_ascii(&self) -> Option<String> {
+        self.selected_bytes().map(|b| format_ascii(&b))
+    }
+
+    /// Extract the raw byte values covered by the current selection.
+    fn selected_bytes(&self) -> Option<Vec<u8>> {
+        self.selection.map(|sel| {
+            self.diffs[sel.start()..=sel.end()]
+                .iter()
+                .map(|&(_, b)| b)
+                .collect()
+        })
     }
 
     pub fn quit(&mut self) {

@@ -14,6 +14,9 @@ pub fn handle_key_events(
 ) -> Result<(), Box<dyn std::error::Error>> {
     match app.search.mode {
         SearchMode::Input(_) => handle_search_input(key_event, app, size),
+        SearchMode::Normal if app.selection.is_some() => {
+            handle_visual_mode(key_event, app, size);
+        }
         SearchMode::Normal => handle_normal_mode(key_event, app, size),
     }
     Ok(())
@@ -30,7 +33,21 @@ fn handle_normal_mode(key_event: KeyEvent, app: &mut App, size: TerminalSize) {
         KeyCode::Char('?') => app.start_search(SearchKind::Ascii),
         KeyCode::Char('n') => app.next_match(size.height),
         KeyCode::Char('N') | KeyCode::Char('p') => app.prev_match(size.height),
+        KeyCode::Char('v') => app.start_selection(),
         KeyCode::Esc => app.search.cancel(),
+        _ => {}
+    }
+}
+
+fn handle_visual_mode(key_event: KeyEvent, app: &mut App, size: TerminalSize) {
+    match key_event.code {
+        KeyCode::Down | KeyCode::Char('j') => app.move_cursor_down(size.height),
+        KeyCode::Up | KeyCode::Char('k') => app.move_cursor_up(),
+        KeyCode::Right | KeyCode::Char('l') => app.move_cursor_right(size.height),
+        KeyCode::Left | KeyCode::Char('h') => app.move_cursor_left(),
+        KeyCode::Char('y') => app.yank_hex(),
+        KeyCode::Char('Y') => app.yank_ascii(),
+        KeyCode::Esc | KeyCode::Char('v') | KeyCode::Char('q') => app.cancel_selection(),
         _ => {}
     }
 }
