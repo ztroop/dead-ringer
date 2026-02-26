@@ -1,6 +1,6 @@
 [package]
 name = "dead-ringer"
-version = "1.1.4"
+version = "1.2.0"
 edition = "2021"
 description = "Dring, A Binary Diff Utility"
 authors = ["Zackary Troop"]
