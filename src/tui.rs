@@ -17,7 +17,6 @@ pub struct Tui<B: Backend> {
 }
 
 pub struct TerminalSize {
-    pub width: u16,
     pub height: u16,
 }
 
@@ -67,7 +66,6 @@ impl<B: Backend<Error: 'static>> Tui<B> {
     pub fn size(&self) -> TerminalSize {
         let size = self.terminal.size().unwrap();
         TerminalSize {
-            width: size.width,
             height: size.height,
         }
     }

@@ -13,7 +13,7 @@ use crate::search::{SearchKind, SearchMode};
 
 /// Render the user interface.
 pub fn render(app: &mut App, frame: &mut Frame) {
-    let size = frame.size();
+    let size = frame.area();
 
     let hex_section_width = (size.width as f32 * 0.7).floor() as usize;
     let padding_and_borders = 4;

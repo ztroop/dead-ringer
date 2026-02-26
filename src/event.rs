@@ -1,4 +1,4 @@
-use crossterm::event::{self, Event as CEvent, KeyEvent, MouseEvent};
+use crossterm::event::{self, Event as CEvent, KeyEvent};
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -7,8 +7,8 @@ use std::time::{Duration, Instant};
 pub enum Event {
     Tick,
     Key(KeyEvent),
-    Mouse(MouseEvent),
-    Resize(u16, u16),
+    Mouse,
+    Resize,
 }
 
 #[allow(dead_code)]
@@ -36,8 +36,8 @@ impl EventHandler {
                     if event::poll(timeout).expect("Failed to poll new events") {
                         match event::read().expect("Unable to read event") {
                             CEvent::Key(e) => sender.send(Event::Key(e)),
-                            CEvent::Mouse(e) => sender.send(Event::Mouse(e)),
-                            CEvent::Resize(w, h) => sender.send(Event::Resize(w, h)),
+                            CEvent::Mouse(_) => sender.send(Event::Mouse),
+                            CEvent::Resize(_, _) => sender.send(Event::Resize),
                             CEvent::FocusGained => Ok(()),
                             CEvent::FocusLost => Ok(()),
                             CEvent::Paste(_) => unimplemented!(),

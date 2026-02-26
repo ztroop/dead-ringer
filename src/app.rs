@@ -4,8 +4,6 @@ use crate::search::{SearchKind, SearchState};
 
 pub struct App {
     pub running: bool,
-    pub file1_data: Vec<u8>,
-    pub file2_data: Vec<u8>,
     pub diffs: Vec<(usize, u8)>,
     pub cursor_pos: usize,
     pub scroll: usize,
@@ -14,11 +12,9 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(file1_data: Vec<u8>, file2_data: Vec<u8>, diffs: Vec<(usize, u8)>) -> Self {
+    pub fn new(diffs: Vec<(usize, u8)>) -> Self {
         Self {
             running: true,
-            file1_data,
-            file2_data,
             diffs,
             cursor_pos: 0,
             scroll: 0,
@@ -41,8 +37,7 @@ impl App {
         }
 
         if (self.cursor_pos / self.bytes_per_line) >= (self.scroll + lines)
-            && (self.scroll + lines)
-                < ((self.diffs.len() + self.bytes_per_line - 1) / self.bytes_per_line)
+            && (self.scroll + lines) < self.diffs.len().div_ceil(self.bytes_per_line)
         {
             self.scroll += 1;
         }
