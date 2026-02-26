@@ -11,7 +11,8 @@ A Rust-based command-line utility designed to compare two binary files, displayi
 - CLI Diff Viewer for Hex and ASCII.
 - Color highlighting for different data types to enhance readability.
 - Keyboard navigation enables interactive exploration of differences.
-- Displays bit position for focused data, aiding in precise location identification.
+- Search for hex byte sequences (`/`) or ASCII strings (`?`), with `n`/`N` to cycle through matches.
+- Displays byte offset for focused data, aiding in precise location identification.
 
 ## Installation
 
@@ -35,6 +36,31 @@ Arguments:
   <file1>  Path to the first binary file
   <file2>  Path to the second binary file
 ```
+
+## Keybindings
+
+| Key | Action |
+|-----|--------|
+| `h/j/k/l` or arrow keys | Navigate |
+| `/` | Search by hex bytes |
+| `?` | Search by ASCII string |
+| `Enter` | Submit search |
+| `Tab` | Toggle between hex/ASCII search |
+| `n` | Next match |
+| `N` | Previous match |
+| `Esc` | Cancel search / clear results |
+| `q` | Quit |
+
+## Examples
+
+The [`examples/`](./examples) directory contains pre-built binary file pairs for testing:
+
+```sh
+cargo run -- examples/simple_v1.bin examples/simple_v2.bin
+cargo run -- examples/firmware_v1.bin examples/firmware_v2.bin
+```
+
+See [`examples/README.md`](./examples/README.md) for the full list of test pairs.
 
 ## Color Reference
 
