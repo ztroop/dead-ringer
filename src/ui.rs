@@ -34,10 +34,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let hex_ascii_chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Length(hex_width),
-            Constraint::Length(ascii_width),
-        ])
+        .constraints([Constraint::Length(hex_width), Constraint::Min(ascii_width)])
         .split(hex_chunks[0]);
 
     let all_matches = app.search.all_match_positions();
@@ -183,6 +180,10 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
                     ),
                     Style::default().fg(Color::Yellow),
                 ));
+                parts.push(Span::styled(
+                    "  n/N next/prev".to_string(),
+                    Style::default().fg(Color::DarkGray),
+                ));
             } else if !app.search.query.is_empty() && app.search.matches.is_empty() {
                 if !parts.is_empty() {
                     parts.push(Span::from("  │  "));
@@ -190,6 +191,14 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
                 parts.push(Span::styled(
                     "No matches".to_string(),
                     Style::default().fg(Color::Red),
+                ));
+            } else {
+                if !parts.is_empty() {
+                    parts.push(Span::from("  │  "));
+                }
+                parts.push(Span::styled(
+                    "/ hex search  ? ascii search  q quit".to_string(),
+                    Style::default().fg(Color::DarkGray),
                 ));
             }
 
