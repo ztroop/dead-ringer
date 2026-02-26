@@ -11,6 +11,7 @@ mod app;
 mod event;
 mod file;
 mod handler;
+mod search;
 mod tui;
 mod ui;
 
