@@ -21,7 +21,7 @@ pub struct TerminalSize {
     pub height: u16,
 }
 
-impl<B: Backend> Tui<B> {
+impl<B: Backend<Error: 'static>> Tui<B> {
     /// Constructs a new instance of [`Tui`].
     pub fn new(terminal: Terminal<B>, events: EventHandler) -> Self {
         Self { terminal, events }
