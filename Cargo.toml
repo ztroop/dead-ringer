@@ -1,9 +1,20 @@
 [package]
 name = "dead-ringer"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2021"
-description = "Dring, A Binary Diff Utility"
+description = "A terminal-based binary diff viewer with hex and ASCII representations"
 authors = ["Zackary Troop"]
+license = "MIT"
+homepage = "https://github.com/ztroop/dead-ringer"
+repository = "https://github.com/ztroop/dead-ringer"
+documentation = "https://docs.rs/dead-ringer"
+keywords = ["binary", "diff", "hex", "tui", "cli"]
+categories = ["command-line-utilities", "visualization"]
+readme = "README.md"
+exclude = [
+    "assets/*",
+    "examples/*",
+]
 
 [[bin]]
 name = "dring"

@@ -17,14 +17,7 @@ A Rust-based command-line utility designed to compare two binary files, displayi
 ## Installation
 
 ```sh
-git clone git@github.com:ztroop/dead-ringer.git && cd ./dead-ringer
-cargo install --path .
-```
-
-### From the AUR
-
-```sh
-paru -S dead-ringer
+cargo install dead-ringer
 ```
 
 ## Usage
