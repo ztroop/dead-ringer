@@ -33,20 +33,31 @@ impl EventHandler {
                         .checked_sub(last_tick.elapsed())
                         .unwrap_or(tick_rate);
 
-                    if event::poll(timeout).expect("Failed to poll new events") {
-                        match event::read().expect("Unable to read event") {
-                            CEvent::Key(e) => sender.send(Event::Key(e)),
-                            CEvent::Mouse(_) => sender.send(Event::Mouse),
-                            CEvent::Resize(_, _) => sender.send(Event::Resize),
-                            CEvent::FocusGained => Ok(()),
-                            CEvent::FocusLost => Ok(()),
-                            CEvent::Paste(_) => unimplemented!(),
-                        }
-                        .expect("Failed to send terminal event")
+                    match event::poll(timeout) {
+                        Ok(true) => match event::read() {
+                            Ok(cevent) => {
+                                let event = match cevent {
+                                    CEvent::Key(e) => Event::Key(e),
+                                    CEvent::Mouse(_) => Event::Mouse,
+                                    CEvent::Resize(_, _) => Event::Resize,
+                                    CEvent::FocusGained | CEvent::FocusLost | CEvent::Paste(_) => {
+                                        continue
+                                    }
+                                };
+                                if sender.send(event).is_err() {
+                                    break;
+                                }
+                            }
+                            Err(_) => break,
+                        },
+                        Ok(false) => {}
+                        Err(_) => break,
                     }
 
                     if last_tick.elapsed() >= tick_rate {
-                        sender.send(Event::Tick).expect("Failed to send tick event");
+                        if sender.send(Event::Tick).is_err() {
+                            break;
+                        }
                         last_tick = Instant::now();
                     }
                 }
