@@ -7,11 +7,7 @@ use crate::{
 };
 
 /// Dispatch key events based on the current application mode.
-pub fn handle_key_events(
-    key_event: KeyEvent,
-    app: &mut App,
-    size: TerminalSize,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn handle_key_events(key_event: KeyEvent, app: &mut App, size: TerminalSize) {
     match app.search.mode {
         SearchMode::Input(_) => handle_search_input(key_event, app, size),
         SearchMode::Normal if app.selection.is_some() => {
@@ -19,7 +15,6 @@ pub fn handle_key_events(
         }
         SearchMode::Normal => handle_normal_mode(key_event, app, size),
     }
-    Ok(())
 }
 
 fn handle_normal_mode(key_event: KeyEvent, app: &mut App, size: TerminalSize) {

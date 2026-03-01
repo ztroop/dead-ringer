@@ -5,6 +5,7 @@ use crossterm::cursor::MoveTo;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::Backend;
+use ratatui::layout::Size;
 use ratatui::Terminal;
 use std::io;
 use std::panic;
@@ -34,7 +35,7 @@ impl<B: Backend<Error: 'static>> Tui<B> {
         // Define a custom panic hook to reset the terminal properties.
         let panic_hook = panic::take_hook();
         panic::set_hook(Box::new(move |panic| {
-            Self::reset().expect("failed to reset the terminal");
+            let _ = Self::reset();
             panic_hook(panic);
         }));
 
@@ -63,8 +64,9 @@ impl<B: Backend<Error: 'static>> Tui<B> {
     }
 
     /// Returns the size of the terminal interface.
+    /// Uses a default of 80x24 if the terminal size cannot be determined.
     pub fn size(&self) -> TerminalSize {
-        let size = self.terminal.size().unwrap();
+        let size = self.terminal.size().unwrap_or_else(|_| Size::new(80, 24));
         TerminalSize {
             height: size.height,
         }

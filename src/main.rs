@@ -34,11 +34,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = App::new(diffs);
     while app.running {
         tui.draw(&mut app)?;
-        match tui.events.next()? {
-            Event::Tick => app.tick()?,
-            Event::Key(key_event) => handle_key_events(key_event, &mut app, tui.size())?,
-            Event::Mouse => {}
-            Event::Resize => {}
+        match tui.events.next() {
+            Ok(event) => match event {
+                Event::Tick => app.tick()?,
+                Event::Key(key_event) => handle_key_events(key_event, &mut app, tui.size()),
+                Event::Mouse => {}
+                Event::Resize => {}
+            },
+            Err(_) => break,
         }
     }
 

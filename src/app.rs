@@ -3,6 +3,9 @@ use std::error;
 use crate::clipboard::{format_ascii, format_hex, osc52_copy, Selection};
 use crate::search::{SearchKind, SearchState};
 
+/// Lines reserved for info bar and borders; visible content lines = height - VISIBLE_LINES_OFFSET.
+pub const VISIBLE_LINES_OFFSET: u16 = 5;
+
 /// Transient feedback message shown in the info bar after an action.
 #[derive(Debug, Clone)]
 pub struct Flash {
@@ -46,7 +49,7 @@ impl App {
     }
 
     pub fn move_cursor_down(&mut self, terminal_height: u16) {
-        let lines = (terminal_height - 5) as usize;
+        let lines = terminal_height.saturating_sub(VISIBLE_LINES_OFFSET) as usize;
         let max_cursor_pos = self.diffs.len().saturating_sub(1);
 
         if self.cursor_pos < max_cursor_pos {
@@ -76,7 +79,7 @@ impl App {
     }
 
     pub fn move_cursor_right(&mut self, terminal_height: u16) {
-        let lines = (terminal_height - 5) as usize;
+        let lines = terminal_height.saturating_sub(VISIBLE_LINES_OFFSET) as usize;
         let max_cursor_pos = self.diffs.len().saturating_sub(1);
 
         if self.cursor_pos < max_cursor_pos {
@@ -134,7 +137,7 @@ impl App {
         }
         if let Some(pos) = self.search.current_match_pos() {
             self.cursor_pos = pos;
-            let visible_lines = (terminal_height.saturating_sub(5)) as usize;
+            let visible_lines = terminal_height.saturating_sub(VISIBLE_LINES_OFFSET) as usize;
             let cursor_line = pos / self.bytes_per_line;
             if cursor_line < self.scroll || cursor_line >= self.scroll + visible_lines {
                 self.scroll = cursor_line.saturating_sub(visible_lines / 2);
@@ -197,12 +200,17 @@ impl App {
 
     /// Extract the raw byte values covered by the current selection.
     fn selected_bytes(&self) -> Option<Vec<u8>> {
-        self.selection.map(|sel| {
-            self.diffs[sel.start()..=sel.end()]
+        let sel = self.selection?;
+        let end = sel.end();
+        if end >= self.diffs.len() {
+            return None;
+        }
+        Some(
+            self.diffs[sel.start()..=end]
                 .iter()
                 .map(|&(_, b)| b)
-                .collect()
-        })
+                .collect(),
+        )
     }
 
     pub fn quit(&mut self) {

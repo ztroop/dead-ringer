@@ -8,7 +8,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::App;
+use crate::app::{App, VISIBLE_LINES_OFFSET};
 use crate::clipboard::Selection;
 use crate::search::{SearchKind, SearchMode};
 
@@ -18,12 +18,16 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let hex_section_width = (size.width as f32 * 0.7).floor() as usize;
     let padding_and_borders = 4;
-    let adjusted_width = hex_section_width - padding_and_borders;
-    app.bytes_per_line = adjusted_width / 3;
+    let adjusted_width = hex_section_width.saturating_sub(padding_and_borders);
+    app.bytes_per_line = (adjusted_width / 3).max(1);
 
     let hex_width = (app.bytes_per_line * 3 + 2) as u16;
     let ascii_width = (app.bytes_per_line + 2) as u16;
-    let lines = (size.height - 3) as usize;
+    let lines = size.height.saturating_sub(VISIBLE_LINES_OFFSET) as usize;
+
+    let total_lines = app.diffs.len().div_ceil(app.bytes_per_line);
+    let max_scroll = total_lines.saturating_sub(lines);
+    app.scroll = app.scroll.min(max_scroll);
 
     let hex_chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -160,7 +164,12 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
         SearchMode::Normal => {
             let mut parts: Vec<Span> = Vec::new();
 
-            if app.cursor_pos < app.diffs.len() {
+            if app.diffs.is_empty() && app.selection.is_none() {
+                parts.push(Span::styled(
+                    "Files are identical".to_string(),
+                    Style::default().fg(Color::Green),
+                ));
+            } else if app.cursor_pos < app.diffs.len() {
                 let offset = app.diffs[app.cursor_pos].0;
                 parts.push(Span::from(format!("Position: {:08x}", offset)));
             }
@@ -169,8 +178,13 @@ fn render_info_bar(app: &App, frame: &mut Frame, area: ratatui::layout::Rect) {
                 if !parts.is_empty() {
                     parts.push(Span::from("  │  "));
                 }
+                let count = if sel.end() >= app.diffs.len() {
+                    0
+                } else {
+                    sel.len()
+                };
                 parts.push(Span::styled(
-                    format!("VISUAL {} byte(s)", sel.len()),
+                    format!("VISUAL {} byte(s)", count),
                     Style::default()
                         .fg(Color::LightBlue)
                         .add_modifier(Modifier::BOLD),

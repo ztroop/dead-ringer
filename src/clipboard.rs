@@ -53,7 +53,7 @@ pub fn format_ascii(bytes: &[u8]) -> String {
     bytes
         .iter()
         .map(|&b| {
-            if b.is_ascii_graphic() || b == b' ' {
+            if b.is_ascii_graphic() || b.is_ascii_whitespace() {
                 b as char
             } else {
                 '.'
