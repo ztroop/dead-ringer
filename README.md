@@ -30,6 +30,8 @@ Arguments:
   <file2>  Path to the second binary file
 ```
 
+**What is displayed:** For differing bytes at the same offset, the diff shows the byte from the first file. When the files differ in length, extra bytes from the longer file are shown.
+
 ## Keybindings
 
 | Key | Action |
